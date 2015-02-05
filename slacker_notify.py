@@ -4,7 +4,7 @@ from time import sleep
 tokenfile = "~/.slacktoken"
 token = open(os.path.expanduser(tokenfile), 'r').read().strip('\n')
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.WARN)
 log = logging.getLogger()
 
 def is_error(r):
