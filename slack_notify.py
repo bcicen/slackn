@@ -4,7 +4,7 @@ from time import sleep
 tokenfile = "~/.slacktoken"
 token = open(os.path.expanduser(tokenfile), 'r').read().strip('\n')
 
-logging.basicConfig(level=logging.WARN)
+logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger()
 
 def is_error(r):
@@ -64,8 +64,8 @@ def do_notify(user_name,msg):
     log.info('notification performed')
 
 def msg_recieved(ws,msg):
+    log.debug('event recieved: %s' % msg)
     msg = json.loads(msg)
-    log.debug(msg)
     if msg['type'] == 'message':
         if msg['user'] != current_user:
             do_notify(lookup_user_name(msg['user']),msg['text'])
