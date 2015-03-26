@@ -1,55 +1,7 @@
-import os,json,logging,notify2,websocket,requests
-from time import sleep
+import os,notify2
+from slacksocket import SlackSocket
 
 tokenfile = "~/.slacktoken"
-token = open(os.path.expanduser(tokenfile), 'r').read().strip('\n')
-
-logging.basicConfig(level=logging.DEBUG)
-log = logging.getLogger()
-
-def is_error(r):
-    if not r['ok']:
-        log.critical('error from slack api:\n %s' % r)
-
-def get_current_user():
-    """
-    Return user id of current user
-    """
-    r = requests.get('https://slack.com/api/auth.test',
-            params={ 'token': token })
-    rj = r.json()
-    is_error(rj)
-
-    return rj['user_id']
-
-def lookup_user_name(user_id):
-    """
-    Look up a user name from user ID
-    """
-    if user_id == 'USLACKBOT':
-        return "slackbot"
-
-    r = requests.get('https://slack.com/api/users.list',
-            params={ 'token': token })
-    rj = r.json()
-    is_error(rj)
-
-    for user in rj['members']:
-        if user['id'] == user_id:
-            return user['name']
-    else:
-        return "unknown"
-
-def get_websocket_url():
-    """
-    retrieve a fresh websocket url from slack api
-    """
-    r = requests.get('https://slack.com/api/rtm.start',
-                  params={ 'token': token })
-    rj = r.json()
-    is_error(rj)
-
-    return rj['url']
 
 def do_notify(user_name,msg):
     notifier = notify2.init('slack notify')
@@ -60,29 +12,17 @@ def do_notify(user_name,msg):
                              "<b>" + user_name + "</b>:\n" + msg,
                              "notification-message-im")
     n.show()
-
-    log.info('notification performed')
-
-def msg_recieved(ws,msg):
-    log.debug('event recieved: %s' % msg)
-    msg = json.loads(msg)
-    if msg['type'] == 'message':
-        if msg['user'] != current_user:
-            do_notify(lookup_user_name(msg['user']),msg['text'])
-
-def on_error(ws, error):
-    log.critical('websocket error:\n %s' % error)
-
-def on_close(ws):
-    raise Exception('websocket closed!')
+    print('notification performed')
 
 def main():
-    ws = websocket.WebSocketApp(get_websocket_url(),
-                                on_message = msg_recieved,
-                                on_error = on_error,
-                                on_close = on_close)
-    ws.run_forever()
+    token = open(os.path.expanduser(tokenfile), 'r').read().strip('\n')
+    s = SlackSocket(token)
+    current_user = s.user
+    while True:
+        event = s.get_event(event_filter=['message'])
+        print('got event')
+        if event.event['user'] != current_user:
+            do_notify(event.event['user'],event.event['text'])
 
 if __name__ == '__main__':
-    current_user = get_current_user()
     main()
