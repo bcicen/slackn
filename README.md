@@ -1,7 +1,6 @@
 # slack-notify
-A small example of a daemon to read from slack RTM api and send event notifications via dbus.
 
-Sends notifications for messages, but there is much room for improvement
+An example of using [SlackSocket](https://github.com/bcicen/slacksocket) to create notifications via dbus from real-time Slack messages
 
 # Configuration
 
