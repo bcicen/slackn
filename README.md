@@ -1,6 +1,6 @@
-# slack-notify
+# slackn
 
-An example of using [SlackSocket](https://github.com/bcicen/slacksocket) to create notifications via dbus from real-time Slack messages
+A better Slack notfication interface for nagios, conveying lots of notifications without spamming a channel
 
 # Configuration
 
