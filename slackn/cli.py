@@ -2,17 +2,17 @@ import sys
 import logging
 from argparse import ArgumentParser
 
-from slackn.core import SlacknDB
+from slackn.core import Queue
 from slackn.version import version
 
 log = logging.getLogger('slackn')
 
-def setup_db(s):
+def get_queue(s):
     if ':' in s:
         host,port = s.split(':')
     else:
         host,port = (s, 6379)
-    return SlacknDB(host,port)
+    return Queue(host,port)
 
 def process():
     parser = ArgumentParser(description='slackn_process v%s' % version)
@@ -24,7 +24,8 @@ def process():
 
     args = parser.parse_args()
 
-    db = setup_db(args.redis)
+    queue = get_queue(args.redis)
+    for hostname,msgs in queue.dump().items():
 
 def notify():
     common_parser = ArgumentParser(add_help=False)
@@ -50,10 +51,11 @@ def notify():
 
     args = parser.parse_args()
 
-    db = setup_db(args.redis)
+    queue = get_queue(args.redis)
 
     notify_args = { k:v for k,v in args.__dict__.items() }
     for k in ('redis','subcommand'):
         del notify_args[k]
 
-    db.add_notification(args.subcommand, notify_args)
+    notify_args['type'] = args.subcommand
+    queue.submit(notify_args)
