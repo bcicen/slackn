@@ -2,16 +2,19 @@ import sys
 import logging
 from argparse import ArgumentParser
 
+from slackn.core import SlacknDB
+
 log = logging.getLogger('slackn')
 version = '1'
 
-def parse_redis(s):
+def setup_db(s):
     if ':' in s:
-        return s.split(':')
+        host,port = s.split(':')
     else:
-        return (s, 6379)
+        host,port = (s, 6379)
+    return SlacknDB(host,port)
 
-def slackn_process():
+def process():
     parser = ArgumentParser(description='slackn_process v%s' % version)
     parser.add_argument('--slack-channel',
                         help='channel to send notifications')
@@ -20,9 +23,10 @@ def slackn_process():
                         help='redis host:port to connect to')
 
     args = parser.parse_args()
-    redis_host, redis_port = parse_redis(args.redis)
 
-def slackn_notify():
+    db = setup_db(args.redis)
+
+def notify():
     common_parser = ArgumentParser(add_help=False)
     common_parser.add_argument('--redis',
                         help='redis host to connect to (127.0.0.1:6379)',
@@ -45,9 +49,14 @@ def slackn_notify():
     parser_service.add_argument('serviceoutput')
 
     args = parser.parse_args()
-    redis_host, redis_port = parse_redis(args.redis)
+
+    db = setup_db(args.redis)
+
+    notify_args = { k:v for k,v in args.__dict__.items() }
+    for k in ('redis','subcommand'):
+        del notify_args[k]
 
     if args.subcommand == 'host':
-        pass
+        db.notify_host(notify_args)
     if args.subcommand == 'service':
-        pass
+        db.notify_service(notify_args)

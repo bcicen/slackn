@@ -1,6 +1,6 @@
 import os
-import uuid
 import logging
+from uuid import uuid4
 from redis import StrictRedis
 
 class SlacknDB(object):
@@ -8,17 +8,17 @@ class SlacknDB(object):
         self.redis = StrictRedis(host=redis_host, port=int(redis_port),
                                  decode_responses=True)
 
-    def _add_host(self, **kwargs):
-        self.redis.hmset('hosts:' + uuid.uuid4(), kwargs)
+    def notify_host(self, notify_args):
+        self.redis.hmset('hosts:' + str(uuid4()), notify_args)
 
-    def _add_service(self, **kwargs):
-        self.redis.hmset('services:' + uuid.uuid4(), kwargs)
+    def notify_service(self, notify_args):
+        self.redis.hmset('services:' + str(uuid4()), notify_args)
 
-    def _get_hosts(self):
+    def get_hosts(self):
         return [ self.redis.hgetall(k) for k in \
                  self.redis.keys(pattern='hosts:*') ] 
 
-    def _get_services(self):
+    def get_services(self):
         return [ self.redis.hgetall(k) for k in \
                  self.redis.keys(pattern='services:*') ] 
 
@@ -29,4 +29,3 @@ class SlacknDB(object):
             return 'yellow'
         else:
             return 'green'
-        
