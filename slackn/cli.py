@@ -2,7 +2,7 @@ import sys
 import logging
 from argparse import ArgumentParser
 
-from slackn.core import Queue
+from slackn.core import Queue, Notifier
 from slackn.version import version
 
 log = logging.getLogger('slackn')
@@ -18,6 +18,8 @@ def process():
     parser = ArgumentParser(description='slackn_process v%s' % version)
     parser.add_argument('--slack-channel',
                         help='channel to send notifications')
+    parser.add_argument('--slack-token',
+                        help='channel to send notifications')
     parser.add_argument('--redis',
                         default='127.0.0.1:6379',
                         help='redis host:port to connect to')
@@ -25,7 +27,13 @@ def process():
     args = parser.parse_args()
 
     queue = get_queue(args.redis)
+    notifier = Notifier(args.slack_token, args.slack_channel)
+
     for hostname,msgs in queue.dump().items():
+        notifier.add_host(hostname, msgs)
+        queue.increment('sent', len(msgs))
+
+    notifier.send()
 
 def notify():
     common_parser = ArgumentParser(add_help=False)
@@ -50,6 +58,9 @@ def notify():
     parser_service.add_argument('serviceoutput')
 
     args = parser.parse_args()
+    if not args.subcommand:
+        print('no notification type provided')
+        sys.exit(1)
 
     queue = get_queue(args.redis)
 

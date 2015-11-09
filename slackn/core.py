@@ -30,14 +30,28 @@ class Attachment(object):
             self.props['color'] = 'warning'
 
 class Notifier(object):
-    def __init__(self, slack_token):
+    def __init__(self, slack_token, slack_channel):
         self.slack = Slacker(slack_token)
+        if slack_channel.startswith('#'):
+            self.channel = slack_channel
+        else:
+            self.channel = '#' + slack_channel
         self.attachments = []
 
     def send(self):
-        pass
+        attach = [ a.props for a in self.attachments ]
 
-    def add_attachment(self, hostname, messages):
+        if not attach:
+            log.info('no notifications to send')
+            return
+
+        res = self.slack.chat.post_message(self.channel, '', 'nagios',
+                    attachments=attach)
+        log.info('slack notification sent')
+        if not res.successful:
+            log.error('slack notification failed:\n%s' % res.error)
+
+    def add_host(self, hostname, messages):
         self.attachments.append(Attachment(hostname, messages))
 
 class Queue(object):
@@ -50,24 +64,24 @@ class Queue(object):
         notify_msg = self._format(notify_args)
 
         self.redis.lpush(key, notify_msg)
-        self.increment('queued')
+        self.increment('queued', 1)
         log.debug('notification queued: %s' % notify_msg) 
 
     def dump(self):
         ret = {}
         for k in self.redis.keys(pattern='slackn:*'):
-            hostname = k.strip('slackn:')
+            hostname = k.replace('slackn:', '')
             ret[hostname]= self.redis.lrange(k, 0, -1)
             self.redis.delete(k)
 
         return ret
 
-    def increment(self, field):
-        self.redis.hincrby('slackn_stats', field, 1)
+    def increment(self, field, count):
+        self.redis.hincrby('slackn_stats', field, count)
 
     @staticmethod
     def _format(notify_args):
-        msg = '{} is {}:\n{}'
+        msg = '{} is {}: {}'
         if notify_args['type'] == 'host':
             return msg.format(notify_args['hostname'],
                               notify_args['hoststate'],
