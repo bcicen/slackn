@@ -5,7 +5,24 @@ from argparse import ArgumentParser
 log = logging.getLogger('slackn')
 version = '1'
 
-def main():
+def parse_redis(s):
+    if ':' in s:
+        return s.split(':')
+    else:
+        return (s, 6379)
+
+def slackn_process():
+    parser = ArgumentParser(description='slackn_process v%s' % version)
+    parser.add_argument('--slack-channel',
+                        help='channel to send notifications')
+    parser.add_argument('--redis',
+                        default='127.0.0.1:6379',
+                        help='redis host:port to connect to')
+
+    args = parser.parse_args()
+    redis_host, redis_port = parse_redis(args.redis)
+
+def slackn_notify():
     common_parser = ArgumentParser(add_help=False)
     common_parser.add_argument('--redis',
                         help='redis host to connect to (127.0.0.1:6379)',
@@ -28,18 +45,9 @@ def main():
     parser_service.add_argument('serviceoutput')
 
     args = parser.parse_args()
-    print(args)
-
-    if ':' in args.redis:
-        redis_host, redis_port = args.redis.split(':')
-    else:
-        redis_host = args.redis
-        redis_port = 6379
+    redis_host, redis_port = parse_redis(args.redis)
 
     if args.subcommand == 'host':
         pass
     if args.subcommand == 'service':
         pass
-
-if __name__ == '__main__':
-    main()
