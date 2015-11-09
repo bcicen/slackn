@@ -8,11 +8,9 @@ class SlacknDB(object):
         self.redis = StrictRedis(host=redis_host, port=int(redis_port),
                                  decode_responses=True)
 
-    def notify_host(self, notify_args):
-        self.redis.hmset('hosts:' + str(uuid4()), notify_args)
-
-    def notify_service(self, notify_args):
-        self.redis.hmset('services:' + str(uuid4()), notify_args)
+    def add_notification(self, notify_type, notify_args):
+        key = '%s:%s' % (notify_type, str(uuid4()))
+        self.redis.hmset(key, notify_args)
 
     def get_hosts(self):
         return [ self.redis.hgetall(k) for k in \

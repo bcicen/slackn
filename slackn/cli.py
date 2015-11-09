@@ -56,7 +56,4 @@ def notify():
     for k in ('redis','subcommand'):
         del notify_args[k]
 
-    if args.subcommand == 'host':
-        db.notify_host(notify_args)
-    if args.subcommand == 'service':
-        db.notify_service(notify_args)
+    db.add_notification(args.subcommand, notify_args)
