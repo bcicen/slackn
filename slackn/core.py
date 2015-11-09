@@ -1,22 +1,26 @@
 import os
+import uuid
 import logging
-import sqlite3
+from redis import StrictRedis
 
-class Slackn(object):
-    def __init__(self, dbpath='/tmp/slackn.db'):
-        self.conn = sqlite3.connect(dbpath)
-        self.cursor = self.conn.cursor()
-        if 'notifications' not in self._tables():
-            self._initdb()
+class SlacknDB(object):
+    def __init__(self, redis_host, redis_port):
+        self.redis = StrictRedis(host=redis_host, port=int(redis_port),
+                                 decode_responses=True)
 
-    def _initdb(self):
-        query = ('''create table notifications
-                    (host_alias text,
-                     host_state text,
-                     host_output text)''')
-        self.cursor.execute(query)
+    def _add_host(self, **kwargs):
+        self.redis.hmset('hosts:' + uuid.uuid4(), kwargs)
 
-    def _tables(self):
-        """ Return a list of all table names """
-        query = '''select name from sqlite_master where type = 'table''''
-        return [ i[0] for i in self.cursor.execute(query).fetchall() ]
+    def _add_service(self, **kwargs):
+        self.redis.hmset('services:' + uuid.uuid4(), kwargs)
+
+    def _state_color(self, state):
+        if state == 'CRITICAL':
+            return 'red'
+        elif state == 'WARNING':
+            return 'yellow'
+        else:
+            return 'green'
+        
+    def _fetchall(self):
+        return self.redis.lrange('hosts', 0, -1)
