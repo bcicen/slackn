@@ -6,6 +6,7 @@ from redis import StrictRedis
 from collections import defaultdict
 
 log = logging.getLogger('slackn')
+icon_url = 'https://slack.global.ssl.fastly.net/4324/img/services/nagios_48.png'
 
 class Attachment(object):
     """ Nagios notification formatted as a Slack attachment """
@@ -46,7 +47,7 @@ class Notifier(object):
             return
 
         res = self.slack.chat.post_message(self.channel, '', 'nagios',
-                    attachments=attach)
+                attachments=attach, icon_url=icon_url)
         log.info('slack notification sent')
         if not res.successful:
             log.error('slack notification failed:\n%s' % res.error)
