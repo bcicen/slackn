@@ -3,9 +3,9 @@ import logging
 from argparse import ArgumentParser
 
 from slackn.core import SlacknDB
+from slackn.version import version
 
 log = logging.getLogger('slackn')
-version = '1'
 
 def setup_db(s):
     if ':' in s:
