@@ -50,7 +50,9 @@ class Notifier(object):
                 attachments=attach, icon_url=icon_url)
         log.info('slack notification sent')
         if not res.successful:
-            log.error('slack notification failed:\n%s' % res.error)
+#            log.error('slack notification failed:\n%s' % res.error)
+            raise Exception('slack notification failed:\n%s' % res.error)
+
 
     def add_host(self, hostname, messages):
         self.attachments.append(Attachment(hostname, messages))
