@@ -16,7 +16,7 @@ class Attachment(object):
         for f in fields:
             self.append_field(f)
 
-    def append_field(self, text, bold=True):
+    def append_field(self, text, bold=False):
         self._set_color(text)
         if bold:
             text = '*%s*' % text
