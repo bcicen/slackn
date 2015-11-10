@@ -1,9 +1,7 @@
 import os
 import logging
-from uuid import uuid4
 from slacker import Slacker
 from redis import StrictRedis
-from collections import defaultdict
 
 log = logging.getLogger('slackn')
 icon_url = 'https://slack.global.ssl.fastly.net/4324/img/services/nagios_48.png'
@@ -49,7 +47,6 @@ class Notifier(object):
         if not res.successful:
 #            log.error('slack notification failed:\n%s' % res.error)
             raise Exception('slack notification failed:\n%s' % res.error)
-
 
     def add_host(self, hostname, messages):
         self.attachments.append(Attachment(hostname, messages))
