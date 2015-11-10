@@ -33,10 +33,7 @@ class Attachment(object):
 class Notifier(object):
     def __init__(self, slack_token, slack_channel):
         self.slack = Slacker(slack_token)
-        if slack_channel.startswith('#'):
-            self.channel = slack_channel
-        else:
-            self.channel = '#' + slack_channel
+        self.channel = slack_channel
         self.attachments = []
 
     def send(self):
