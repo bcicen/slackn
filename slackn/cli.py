@@ -50,12 +50,14 @@ def notify():
     parser_host.add_argument('hostname')
     parser_host.add_argument('hoststate')
     parser_host.add_argument('hostoutput')
+    parser_host.add_argument('nagiostype')
 
     parser_service = subparsers.add_parser('service')
     parser_service.add_argument('hostname')
     parser_service.add_argument('servicedesc')
     parser_service.add_argument('servicestate')
     parser_service.add_argument('serviceoutput')
+    parser_host.add_argument('nagiostype')
 
     args = parser.parse_args()
     if not args.subcommand:
