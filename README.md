@@ -37,12 +37,12 @@ define contact {
 
 define command {
       command_name     notify-service-by-slack
-      command_line     /usr/bin/slackn-notify service "$HOSTNAME$" "$SERVICEDESC$" "$SERVICESTATE$" "$SERVICEOUTPUT$"
+      command_line     /usr/bin/slackn-notify service "$HOSTNAME$" "$SERVICEDESC$" "$SERVICESTATE$" "$SERVICEOUTPUT$" "$NOTIFICATIONTYPE$"
 }
 
 define command {
       command_name     notify-host-by-slack
-      command_line     /usr/bin/slackn-notify host "$HOSTNAME$" "$HOSTSTATE$" "$HOSTOUTPUT$"
+      command_line     /usr/bin/slackn-notify host "$HOSTNAME$" "$HOSTSTATE$" "$HOSTOUTPUT$" "$NOTIFICATIONTYPE$"
 }
 ```
 

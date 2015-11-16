@@ -78,6 +78,9 @@ class Queue(object):
 
     @staticmethod
     def _format(notify_args):
+        if notify_args['nagiostype'] == 'ACKNOWLEDGEMENT':
+            return self._format_ack(notify_args)
+
         msg = '{} is {}: {}'
         if notify_args['type'] == 'host':
             return msg.format(notify_args['hostname'],
@@ -87,3 +90,10 @@ class Queue(object):
             return msg.format(notify_args['servicedesc'],
                               notify_args['servicestate'],
                               notify_args['serviceoutput'])
+
+    def _format_ack(notify_args):
+        msg = 'ACKNOWLEDGED: {} is {}: {}'
+        if notify_args['type'] == 'host':
+            return msg.format(notify_args['hostname'])
+        elif notify_args['type'] == 'service':
+            return msg.format(notify_args['servicedesc'])
