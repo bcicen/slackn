@@ -91,7 +91,7 @@ class Queue(object):
                               notify_args['serviceoutput'])
 
     def _format_ack(self, notify_args):
-        msg = 'ACKNOWLEDGED: {} is {}: {}'
+        msg = 'ACKNOWLEDGED: {}'
         if notify_args['type'] == 'host':
             return msg.format(notify_args['hostname'])
         elif notify_args['type'] == 'service':
