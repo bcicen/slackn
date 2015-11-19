@@ -76,8 +76,7 @@ class Queue(object):
     def increment(self, field, count):
         self.redis.hincrby('slackn_stats', field, count)
 
-    @staticmethod
-    def _format(notify_args):
+    def _format(self, notify_args):
         if notify_args['nagiostype'] == 'ACKNOWLEDGEMENT':
             return self._format_ack(notify_args)
 
@@ -91,7 +90,7 @@ class Queue(object):
                               notify_args['servicestate'],
                               notify_args['serviceoutput'])
 
-    def _format_ack(notify_args):
+    def _format_ack(self, notify_args):
         msg = 'ACKNOWLEDGED: {} is {}: {}'
         if notify_args['type'] == 'host':
             return msg.format(notify_args['hostname'])
