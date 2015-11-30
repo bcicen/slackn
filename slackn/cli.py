@@ -2,7 +2,7 @@ import sys
 import logging
 from argparse import ArgumentParser
 
-from slackn.core import Queue, Notifier
+from slackn import Queue, Notifier
 from slackn.version import version
 
 log = logging.getLogger('slackn')
