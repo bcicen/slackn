@@ -33,11 +33,11 @@ def process():
     notifier = Notifier(args.slack_token, args.slack_channel)
 
     if args.stats:
-        for hostname, msgs in queue.dump().items():
-            notifier.add_attachment(hostname, msgs)
-    else:
         fields = [ k + ': ' + v for k,v in queue.dump_stats().items() ]
         notifier.add_attachment('SlackN Stats', fields)
+    else:
+        for hostname, msgs in queue.dump().items():
+            notifier.add_attachment(hostname, msgs)
 
     notifier.send()
 
