@@ -8,11 +8,11 @@ log = logging.getLogger('slackn')
 icon_url = 'https://slack.global.ssl.fastly.net/4324/img/services/nagios_48.png'
 
 class Attachment(object):
-    """ Nagios notification(s) formatted as a Slack attachment """
+    """ Nagios notification formatted as a Slack attachment """
     def __init__(self, title, fields):
         self.props = { 'mrkdwn_in': ['fields'],
                        'title': title,
-                       'color': 'good',
+                       'color': '#eee',
                        'fields': [] }
         for f in fields:
             self.append_field(f)
@@ -28,6 +28,8 @@ class Attachment(object):
             self.props['color'] = 'danger'
         if 'WARNING' in text:
             self.props['color'] = 'warning'
+        if 'OK' in text:
+            self.props['color'] = 'good'
 
 class Notifier(object):
     def __init__(self, slack_token, slack_channel):
@@ -49,8 +51,8 @@ class Notifier(object):
 #            log.error('slack notification failed:\n%s' % res.error)
             raise Exception('slack notification failed:\n%s' % res.error)
 
-    def add_host(self, hostname, messages):
-        self.attachments.append(Attachment(hostname, messages))
+    def add_attachment(self, title, messages):
+        self.attachments.append(Attachment(title, messages))
 
 class Queue(object):
     def __init__(self, redis_host, redis_port):
@@ -78,7 +80,11 @@ class Queue(object):
         return ret
 
     def dump_stats(self):
-        return self.redis.hgetall('slackn_stats')
+        ret = { k.replace('host:', ''):v for k,v in \
+                self.redis.hgetall('slackn_stats').items() }
+        self.redis.delete('slackn_stats')
+        
+        return ret
 
     def _stats(self, notify_args):
         self._increment('notifications', 1)

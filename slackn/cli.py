@@ -23,14 +23,21 @@ def process():
     parser.add_argument('--redis',
                         default='127.0.0.1:6379',
                         help='redis host:port to connect to')
+    parser.add_argument('--stats',
+                        action='store_true',
+                        help='report notification stats to Slack')
 
     args = parser.parse_args()
 
     queue = get_queue(args.redis)
     notifier = Notifier(args.slack_token, args.slack_channel)
 
-    for hostname, msgs in queue.dump().items():
-        notifier.add_host(hostname, msgs)
+    if args.stats:
+        for hostname, msgs in queue.dump().items():
+            notifier.add_attachment(hostname, msgs)
+    else:
+        fields = [ k + ': ' + v for k,v in queue.dump_stats().items() ]
+        notifier.add_attachment('SlackN Stats', fields)
 
     notifier.send()
 
