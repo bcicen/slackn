@@ -14,8 +14,20 @@ def get_queue(s):
         host,port = (s, 6379)
     return Queue(host,port)
 
+def stats():
+    parser = ArgumentParser(description='slackn-stats v%s' % version)
+    parser.add_argument('--redis',
+                        default='127.0.0.1:6379',
+                        help='redis host:port to connect to')
+
+    args = parser.parse_args()
+    queue = get_queue(args.redis)
+
+    for k,v in queue.dump_stats().items():
+        print('%s: %s' % (k,v))
+
 def process():
-    parser = ArgumentParser(description='slackn_process v%s' % version)
+    parser = ArgumentParser(description='slackn-process v%s' % version)
     parser.add_argument('--slack-channel',
                         help='channel to send notifications')
     parser.add_argument('--slack-token',
@@ -23,15 +35,21 @@ def process():
     parser.add_argument('--redis',
                         default='127.0.0.1:6379',
                         help='redis host:port to connect to')
+    parser.add_argument('--stats',
+                        action='store_true',
+                        help='report notification stats to Slack')
 
     args = parser.parse_args()
 
     queue = get_queue(args.redis)
     notifier = Notifier(args.slack_token, args.slack_channel)
 
-    for hostname,msgs in queue.dump().items():
-        notifier.add_host(hostname, msgs)
-        queue.increment('sent', len(msgs))
+    if args.stats:
+        fields = [ k + ': ' + v for k,v in queue.dump_stats().items() ]
+        notifier.add_attachment('SlackN Stats', fields)
+    else:
+        for hostname,msgs in queue.dump().items():
+            notifier.add_attachment(hostname, msgs)
 
     notifier.send()
 
