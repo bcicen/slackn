@@ -24,6 +24,6 @@ setup(
     ),
     keywords='slack nagios devops',
     entry_points={'console_scripts': ['slackn-notify = slackn.cli:notify',
-                                      'slackn-process = slackn.cli:process'],
+                                      'slackn-process = slackn.cli:process',
                                       'slackn-stats = slackn.cli:stats'] }
 )
