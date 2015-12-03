@@ -81,7 +81,6 @@ class Queue(object):
     def dump_stats(self):
         ret = { k.replace('host:', ''):v for k,v in \
                 self.redis.hgetall('slackn_stats').items() }
-        self.redis.delete('slackn_stats')
         
         return ret
 
