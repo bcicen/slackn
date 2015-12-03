@@ -65,8 +65,7 @@ class Queue(object):
 
         self.redis.lpush(key, notify_msg)
 
-        # update stats
-        self._stats(notify_msg)
+        self._stats(notify_args)
 
         log.debug('notification queued: %s' % notify_msg) 
 
