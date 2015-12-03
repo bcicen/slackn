@@ -81,7 +81,7 @@ class Queue(object):
         return self.redis.hgetall('slackn_stats')
 
     def _stats(self, notify_args):
-        self._increment('queued', 1)
+        self._increment('notifications', 1)
         self._increment('host:' + notify_args['hostname'], 1)
 
     def _increment(self, field, count):

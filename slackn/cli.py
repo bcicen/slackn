@@ -31,7 +31,6 @@ def process():
 
     for hostname, msgs in queue.dump().items():
         notifier.add_host(hostname, msgs)
-        queue._increment('sent', len(msgs))
 
     notifier.send()
 
