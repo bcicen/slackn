@@ -15,7 +15,7 @@ def get_queue(s):
     return Queue(host,port)
 
 def process():
-    parser = ArgumentParser(description='slackn_process v%s' % version)
+    parser = ArgumentParser(description='slackn-process v%s' % version)
     parser.add_argument('--slack-channel',
                         help='channel to send notifications')
     parser.add_argument('--slack-token',
@@ -29,9 +29,9 @@ def process():
     queue = get_queue(args.redis)
     notifier = Notifier(args.slack_token, args.slack_channel)
 
-    for hostname,msgs in queue.dump().items():
+    for hostname, msgs in queue.dump().items():
         notifier.add_host(hostname, msgs)
-        queue.increment('sent', len(msgs))
+        queue._increment('sent', len(msgs))
 
     notifier.send()
 

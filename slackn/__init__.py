@@ -1,5 +1,6 @@
 import os
 import logging
+import datetime
 from slacker import Slacker
 from redis import StrictRedis
 
@@ -7,7 +8,7 @@ log = logging.getLogger('slackn')
 icon_url = 'https://slack.global.ssl.fastly.net/4324/img/services/nagios_48.png'
 
 class Attachment(object):
-    """ Nagios notification formatted as a Slack attachment """
+    """ Nagios notification(s) formatted as a Slack attachment """
     def __init__(self, title, fields):
         self.props = { 'mrkdwn_in': ['fields'],
                        'title': title,
@@ -61,7 +62,10 @@ class Queue(object):
         notify_msg = self._format(notify_args)
 
         self.redis.lpush(key, notify_msg)
-        self.increment('queued', 1)
+
+        # update stats
+        self._stats(notify_msg)
+
         log.debug('notification queued: %s' % notify_msg) 
 
     def dump(self):
@@ -73,7 +77,14 @@ class Queue(object):
 
         return ret
 
-    def increment(self, field, count):
+    def dump_stats(self):
+        return self.redis.hgetall('slackn_stats')
+
+    def _stats(self, notify_args):
+        self._increment('queued', 1)
+        self._increment('host:' + notify_args['hostname'], 1)
+
+    def _increment(self, field, count):
         self.redis.hincrby('slackn_stats', field, count)
 
     def _format(self, notify_args):
